@@ -49,6 +49,19 @@ namespace TelegramOnlyBot.Models
         {
             await TimeTables.InsertOneAsync(p);
         }
+
+        /// обновление документа
+        public async Task UpdateStudents(string id, long idStudent)
+        {
+            var filter = Builders<TimeTables>
+             .Filter.Eq(e => e.Id, id);
+
+            var update = Builders<TimeTables>.Update
+                    .Push<long>(e => e.Students, idStudent);
+
+            await TimeTables.FindOneAndUpdateAsync(filter, update);
+        }
+
         /// обновление документа
         public async Task Update(TimeTables p)
         {

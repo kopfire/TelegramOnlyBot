@@ -26,6 +26,8 @@ namespace TelegramOnlyBot
 
         private static readonly CitiesService CitiesDB = new CitiesService();
 
+        private static readonly UniversitiesService UniversitiesDB = new UniversitiesService();
+
         static async Task<string> PostURI(Uri u, HttpContent c)
         {
             var response = string.Empty;
@@ -105,10 +107,29 @@ namespace TelegramOnlyBot
                                     text: "Выбери город",
                                     replyMarkup: inlineKeyboard);
                             }
-                            else if (temp == 1) { 
+                            else if (temp == 1)
+                            {
 
+                                Console.WriteLine(21);
+                                var universities = await UniversitiesDB.GetUniversities(update.CallbackQuery.Data);
+                                var universitiesNameString = "";
+                                var universitiesIdString = "";
+                                foreach (Universities i in universities)
+                                {
+                                    Console.WriteLine(i.Name);
+                                    universitiesNameString += i.Name + ",";
+                                    universitiesIdString += i.Id + ",";
+                                }
+                                var inlineKeyboard = new InlineKeyboardMarkup(GetInlineKeyboard(universitiesNameString.Remove(universitiesNameString.Length - 1).Split(","), universitiesIdString.Remove(universitiesIdString.Length - 1).Split(",")));
+                                Console.WriteLine("222222222");
+                                await botClient.EditMessageTextAsync(
+                                    chatId: messageKeyboard.Chat.Id,
+                                    messageId: messageKeyboard.MessageId,
+                                    text: "Выбери университет",
+                                    replyMarkup: inlineKeyboard);
+                                temp = 2;
                             }
-                            else
+                            else if (temp == 2)
                             {
                                 Console.WriteLine(21);
                                 var timeTables = await TimeTablesDB.GetTimeTables(update.CallbackQuery.Data);
@@ -122,12 +143,19 @@ namespace TelegramOnlyBot
                                 }
                                 var inlineKeyboard = new InlineKeyboardMarkup(GetInlineKeyboard(timeTablesNameString.Remove(timeTablesNameString.Length - 1).Split(","), timeTablesIdString.Remove(timeTablesIdString.Length - 1).Split(",")));
                                 Console.WriteLine("222222222");
-                                temp = 1;
                                 await botClient.EditMessageTextAsync(
                                     chatId: messageKeyboard.Chat.Id,
                                     messageId: messageKeyboard.MessageId,
                                     text: "Выбери группу",
                                     replyMarkup: inlineKeyboard);
+                                temp = 3;
+                            }                           
+                            else {
+                                await TimeTablesDB.UpdateStudents(update.CallbackQuery.Data, messageKeyboard.Chat.Id);
+                                await botClient.EditMessageTextAsync(
+                                    chatId: messageKeyboard.Chat.Id,
+                                    messageId: messageKeyboard.MessageId,
+                                    text: "Вы успешно добавлены в базу данных!");
                                 temp = 0;
                             }
                         }
@@ -201,7 +229,6 @@ namespace TelegramOnlyBot
                 else if (message.Text == "/checktoday")
                 {
                     TimeTables timeTables = await TimeTablesDB.GetTimeTable(message.Chat.Id);
-                    Console.WriteLine(timeTables.Group);
                     if (timeTables is not null)
                     {
                         DateTime dayNow = DateTime.Today;
@@ -255,7 +282,6 @@ namespace TelegramOnlyBot
                 else if (message.Text == "/checktomorrow")
                 {
                     TimeTables timeTables = await TimeTablesDB.GetTimeTable(message.Chat.Id);
-                    Console.WriteLine(timeTables.Group);
                     if (timeTables is not null)
                     {
                         DateTime dayNow = DateTime.Today.AddDays(1);

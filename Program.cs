@@ -13,11 +13,18 @@ using Telegram.Bot.Extensions.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using TelegramOnlyBot.Models;
 
 namespace TelegramOnlyBot
 {
     class Program
     {
+
+        private static readonly TimeTablesService TimeTablesDB = new TimeTablesService();
+
+        private static readonly CountriesService CountriesDB = new CountriesService();
+
+        private static readonly CitiesService CitiesDB = new CitiesService();
 
         static async Task<string> PostURI(Uri u, HttpContent c)
         {
@@ -45,9 +52,13 @@ namespace TelegramOnlyBot
             days.Add(5, "Пятница");
             days.Add(6, "Суббота");
 
+            Message messageKeyboard = new Message() { Chat = new Chat() { Id = 0} };
+
+            var temp = 0;
+
             var botClient = new TelegramBotClient("1837593586:AAGJCGUa3LY9U05r_h8iI-1ZUM91njSzLkI");
             using var cts = new CancellationTokenSource();
-            botClient.StartReceiving(new DefaultUpdateHandler(HandleUpdateAsync, HandleErrorAsync),
+            botClient.StartReceiving(new DefaultUpdateHandler(updateHandler: HandleUpdateAsync, errorHandler: HandleErrorAsync),
     cts.Token);
             Console.ReadLine();
 
@@ -62,6 +73,8 @@ namespace TelegramOnlyBot
                 return Task.CompletedTask;
             }
 
+            
+
             async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
             {
 
@@ -69,8 +82,55 @@ namespace TelegramOnlyBot
                 {
                     if (update.Type == UpdateType.CallbackQuery)
                     {
-                        CallbackQuery q = update.CallbackQuery;
-                        Console.WriteLine(q.Data);
+                        if (messageKeyboard.Chat.Id == update.CallbackQuery.Message.Chat.Id)
+                        {
+                            if (temp == 0)
+                            {
+                                Console.WriteLine(11);
+                                var cities = await CitiesDB.GetCities(update.CallbackQuery.Data);
+                                var citiesNameString = "";
+                                var citiesIdString = "";
+                                foreach (Cities i in cities)
+                                {
+                                    Console.WriteLine(i.Name);
+                                    citiesNameString += i.Name + ",";
+                                    citiesIdString += i.Id + ",";
+                                }
+                                var inlineKeyboard = new InlineKeyboardMarkup(GetInlineKeyboard(citiesNameString.Remove(citiesNameString.Length - 1).Split(","), citiesIdString.Remove(citiesIdString.Length - 1).Split(",")));
+                                Console.WriteLine("2");
+                                temp = 1;
+                                await botClient.EditMessageTextAsync(
+                                    chatId: messageKeyboard.Chat.Id,
+                                    messageId: messageKeyboard.MessageId,
+                                    text: "Выбери город",
+                                    replyMarkup: inlineKeyboard);
+                            }
+                            else if (temp == 1) { 
+
+                            }
+                            else
+                            {
+                                Console.WriteLine(21);
+                                var timeTables = await TimeTablesDB.GetTimeTables(update.CallbackQuery.Data);
+                                var timeTablesNameString = "";
+                                var timeTablesIdString = "";
+                                foreach (TimeTables i in timeTables)
+                                {
+                                    Console.WriteLine(i.Group);
+                                    timeTablesNameString += i.Group + ",";
+                                    timeTablesIdString += i.Id + ",";
+                                }
+                                var inlineKeyboard = new InlineKeyboardMarkup(GetInlineKeyboard(timeTablesNameString.Remove(timeTablesNameString.Length - 1).Split(","), timeTablesIdString.Remove(timeTablesIdString.Length - 1).Split(",")));
+                                Console.WriteLine("222222222");
+                                temp = 1;
+                                await botClient.EditMessageTextAsync(
+                                    chatId: messageKeyboard.Chat.Id,
+                                    messageId: messageKeyboard.MessageId,
+                                    text: "Выбери группу",
+                                    replyMarkup: inlineKeyboard);
+                                temp = 0;
+                            }
+                        }
                     }
                     return;
                 }
@@ -88,23 +148,14 @@ namespace TelegramOnlyBot
 
                 if (message.Text == "/check")
                 {
-                    var jsonPost = new JsonPost { Command = "checktoday", User = message.Chat.Id };
-
-                    var jsonString = JsonSerializer.Serialize(jsonPost);
-                    var data = new StringContent(jsonString, Encoding.UTF8, "application/json");
-                    var url = "http://localhost:5000/api/telegram/message";
-                    using var client = new HttpClient();
-                    var response = await client.PostAsync(url, data);
                     int lol = 0;
-                    var responseContent = await response.Content.ReadAsStringAsync();
-                    if (!responseContent.Equals("null"))
+                    TimeTables timeTables = await TimeTablesDB.GetTimeTable(message.Chat.Id);
+                    if (timeTables is not null)
                     {
                         DateTime dayNow = DateTime.Today;
                         var cal = new GregorianCalendar();
                         var weekNumber = cal.GetWeekOfYear(dayNow, CalendarWeekRule.FirstFullWeek, DayOfWeek.Monday);
-
-                        var timeTable = JsonSerializer.Deserialize<TimeTable>(responseContent);
-                        foreach (Week week in timeTable.Weeks)
+                        foreach (Week week in timeTables.Weeks)
                         {
                             if (week.Number == weekNumber % 2)
                             {
@@ -149,25 +200,15 @@ namespace TelegramOnlyBot
                 }
                 else if (message.Text == "/checktoday")
                 {
-                    var jsonPost = new JsonPost { Command = "checktoday", User = message.Chat.Id };
-
-                    var jsonString = JsonSerializer.Serialize(jsonPost);
-                    var data = new StringContent(jsonString, Encoding.UTF8, "application/json");
-
-                    var url = "http://localhost:5000/api/telegram/message";
-                    using var client = new HttpClient();
-                    var response = await client.PostAsync(url, data);
-                    var responseContent = await response.Content.ReadAsStringAsync();
-                    if (!responseContent.Equals("null"))
+                    TimeTables timeTables = await TimeTablesDB.GetTimeTable(message.Chat.Id);
+                    Console.WriteLine(timeTables.Group);
+                    if (timeTables is not null)
                     {
                         DateTime dayNow = DateTime.Today;
                         var cal = new GregorianCalendar();
                         var weekNumber = cal.GetWeekOfYear(dayNow, CalendarWeekRule.FirstFullWeek, DayOfWeek.Monday);
-
-                        var timeTable = JsonSerializer.Deserialize<TimeTable>(responseContent);
-
                         int c = 0;
-                        foreach (Week week in timeTable.Weeks)
+                        foreach (Week week in timeTables.Weeks)
                         {
                             if (week.Number == weekNumber % 2)
                             {
@@ -213,25 +254,16 @@ namespace TelegramOnlyBot
                 }
                 else if (message.Text == "/checktomorrow")
                 {
-                    var jsonPost = new JsonPost { Command = "checkTomorrow", User = message.Chat.Id };
-
-                    var jsonString = JsonSerializer.Serialize(jsonPost);
-                    var data = new StringContent(jsonString, Encoding.UTF8, "application/json");
-
-                    var url = "http://localhost:5000/api/telegram/message";
-                    using var client = new HttpClient();
-                    var response = await client.PostAsync(url, data);
-
-                    var responseContent = await response.Content.ReadAsStringAsync();
-                    if (!responseContent.Equals("null"))
+                    TimeTables timeTables = await TimeTablesDB.GetTimeTable(message.Chat.Id);
+                    Console.WriteLine(timeTables.Group);
+                    if (timeTables is not null)
                     {
                         DateTime dayNow = DateTime.Today.AddDays(1);
                         var cal = new GregorianCalendar();
                         var weekNumber = cal.GetWeekOfYear(dayNow, CalendarWeekRule.FirstFullWeek, DayOfWeek.Monday);
 
-                        var timeTable = JsonSerializer.Deserialize<TimeTable>(responseContent);
                         int c = 0;
-                        foreach (Week week in timeTable.Weeks)
+                        foreach (Week week in timeTables.Weeks)
                         {
                             if (week.Number == weekNumber % 2)
                             {
@@ -275,21 +307,20 @@ namespace TelegramOnlyBot
                 }
                 else if (message.Text == "/setgroup")
                 {
-                    var inlineKeyboard = new InlineKeyboardMarkup(new[]
-                        {
-                            new []
-                            {
-
-                                InlineKeyboardButton.WithCallbackData(text: "1.1", callbackData: "11"),
-                                InlineKeyboardButton.WithCallbackData(text: "1.2", callbackData: "12"),
-                            },
-                        }
-                    );
-
-                    await botClient.SendTextMessageAsync(
+                    var countries = await CountriesDB.GetCounties();
+                    var countriesNameString = "";
+                    var countriesIdString = "";
+                    foreach (Countries i in countries)
+                    {
+                        countriesNameString += i.Name + ",";
+                        countriesIdString += i.Id + ",";
+                    }
+                    var inlineKeyboard = new InlineKeyboardMarkup(GetInlineKeyboard(countriesNameString.Remove(countriesNameString.Length - 1).Split(","), countriesIdString.Remove(countriesIdString.Length - 1).Split(",")));
+                    messageKeyboard = await botClient.SendTextMessageAsync(
                         chatId: chatId,
                         text: "Выбери страну",
                         replyMarkup: inlineKeyboard);
+                    
 
                 }
                 else
@@ -302,6 +333,17 @@ namespace TelegramOnlyBot
 
                 }
             }
+        }
+        private static InlineKeyboardButton[][] GetInlineKeyboard(string[] nameArray, string[] idArray)
+        {
+           
+            var keyboardInline = new InlineKeyboardButton[nameArray.Length][];
+            for (var i = 0; i < nameArray.Length; i++)
+            {
+                keyboardInline[i] = new InlineKeyboardButton[1];
+                keyboardInline[i][0] = InlineKeyboardButton.WithCallbackData(text: nameArray[i], callbackData: idArray[i]);
+            }
+            return keyboardInline;
         }
     }
 }

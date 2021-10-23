@@ -2,7 +2,6 @@
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace TelegramOnlyBot.Models
@@ -21,6 +20,12 @@ namespace TelegramOnlyBot.Models
             IMongoDatabase database = client.GetDatabase("Telegram");
             /// обращаемся к коллекции TimeTable
             TimeTables = database.GetCollection<TimeTables>("TimeTables");
+        }
+
+        /// получаем все группы по городу в БД
+        public async Task<IEnumerable<TimeTables>> GetTimeTables(string id)
+        {
+            return await TimeTables.Find(new BsonDocument("University", new ObjectId(id))).ToListAsync();
         }
 
         /// получаем один документ по группе

@@ -1,9 +1,7 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using MongoDB.Driver;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Configuration;
 using TelegramOnlyBot.Helpers.JSON;
 
 namespace TelegramOnlyBot.Models
@@ -12,6 +10,9 @@ namespace TelegramOnlyBot.Models
     {
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
+
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string University { get; set; }
 
         [Display(Name = "Группа")]
         public string Group { get; set; }

@@ -40,10 +40,7 @@ namespace TelegramOnlyBot.Models
         /// получаем один документ по id студента
         public async Task<TimeTables> GetTimeTable(long id)
         {
-            Console.WriteLine("OK1");
             var filter = Builders<TimeTables>.Filter.AnyEq(x => x.Students,  id );
-
-            Console.WriteLine("OK2");
             return await TimeTables.FindAsync(filter).Result.FirstOrDefaultAsync();
         }
         /// добавление документа

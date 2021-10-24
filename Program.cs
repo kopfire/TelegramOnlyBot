@@ -89,7 +89,6 @@ namespace TelegramOnlyBot
                         string[] array = update.CallbackQuery.Data.Split(":");
                         if (array[0] == "1")
                         {
-                            Console.WriteLine(11);
                             var cities = await CitiesDB.GetCities(array[2]);
                             var citiesNameString = "";
                             var citiesIdString = "";
@@ -157,7 +156,6 @@ namespace TelegramOnlyBot
                                 replyMarkup: inlineKeyboard);
                         }
                         else if (array[0] == "5") { 
-                            Console.WriteLine(21);
                             var timeTables = await TimeTablesDB.GetTimeTables(array[2]);
                             var timeTablesNameString = "";
                             var timeTablesIdString = "";

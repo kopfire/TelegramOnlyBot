@@ -26,10 +26,8 @@ namespace TelegramOnlyBot.Models
         /// получаем все страны в БД
         public async Task<IEnumerable<Countries>> GetCounties()
         {
-            Console.WriteLine("OK2");
             var builder = new FilterDefinitionBuilder<Countries>();
             var filter = builder.Empty;
-            Console.WriteLine("OK3");
             return await Countries.Find(filter).ToListAsync();
         }
 

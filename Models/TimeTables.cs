@@ -12,7 +12,7 @@ namespace TelegramOnlyBot.Models
         public string Id { get; set; }
 
         [BsonRepresentation(BsonType.ObjectId)]
-        public string University { get; set; }
+        public string Speciality { get; set; }
 
         [Display(Name = "Группа")]
         public string Group { get; set; }

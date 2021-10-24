@@ -27,7 +27,7 @@ namespace TelegramOnlyBot.Models
         /// получаем все группы по городу в БД
         public async Task<IEnumerable<TimeTables>> GetTimeTables(string id)
         {
-            return await TimeTables.Find(new BsonDocument("University", new ObjectId(id))).ToListAsync();
+            return await TimeTables.Find(new BsonDocument("Speciality", new ObjectId(id))).ToListAsync();
         }
 
         /// получаем один документ по группе

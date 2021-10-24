@@ -20,13 +20,17 @@ namespace TelegramOnlyBot
     class Program
     {
 
-        private static readonly TimeTablesService TimeTablesDB = new TimeTablesService();
-
         private static readonly CountriesService CountriesDB = new CountriesService();
 
         private static readonly CitiesService CitiesDB = new CitiesService();
 
         private static readonly UniversitiesService UniversitiesDB = new UniversitiesService();
+
+        private static readonly FacultiesService FacultiesDB = new FacultiesService();
+
+        private static readonly SpecialtiesService SpecialitiesDB = new SpecialtiesService();
+
+        private static readonly TimeTablesService TimeTablesDB = new TimeTablesService();
 
         static async Task<string> PostURI(Uri u, HttpContent c)
         {
@@ -81,8 +85,8 @@ namespace TelegramOnlyBot
                 {
                     if (update.Type == UpdateType.CallbackQuery)
                     {
+                        Console.WriteLine($"Received a '{update.CallbackQuery.Data}' message in chat {update.CallbackQuery.Message.Chat.Id} {update.CallbackQuery.Message.Chat.Username}.");
                         string[] array = update.CallbackQuery.Data.Split(":");
-                        Console.WriteLine(update.CallbackQuery.Data);
                         if (array[0] == "1")
                         {
                             Console.WriteLine(11);
@@ -91,7 +95,6 @@ namespace TelegramOnlyBot
                             var citiesIdString = "";
                             foreach (Cities i in cities)
                             {
-                                Console.WriteLine(i.Name);
                                 citiesNameString += i.Name + ",";
                                 citiesIdString += "2:" + array[1] + ":" + i.Id + ",";
                             }
@@ -109,7 +112,6 @@ namespace TelegramOnlyBot
                             var universitiesIdString = "";
                             foreach (Universities i in universities)
                             {
-                                Console.WriteLine(i.Name);
                                 universitiesNameString += i.Name + ",";
                                 universitiesIdString += "3:" + array[1] + ":" + i.Id + ",";
                             }
@@ -122,15 +124,47 @@ namespace TelegramOnlyBot
                         }
                         else if (array[0] == "3")
                         {
+                            var faculties = await FacultiesDB.GetFaculties(array[2]);
+                            var facultiesNameString = "";
+                            var facultiesIdString = "";
+                            foreach (Faculties i in faculties)
+                            {
+                                facultiesNameString += i.Name + ",";
+                                facultiesIdString += "4:" + array[1] + ":" + i.Id + ",";
+                            }
+                            var inlineKeyboard = new InlineKeyboardMarkup(GetInlineKeyboard(facultiesNameString.Remove(facultiesNameString.Length - 1).Split(","), facultiesIdString.Remove(facultiesIdString.Length - 1).Split(",")));
+                            await botClient.EditMessageTextAsync(
+                                chatId: update.CallbackQuery.Message.Chat.Id,
+                                messageId: Int32.Parse(array[1]),
+                                text: "Выбери факультет",
+                                replyMarkup: inlineKeyboard);
+                        }
+                        else if (array[0] == "4")
+                        {
+                            var specialities = await SpecialitiesDB.GetSpecialties(array[2]);
+                            var specialitiesNameString = "";
+                            var specialitiesIdString = "";
+                            foreach (Specialties i in specialities)
+                            {
+                                specialitiesNameString += i.Name + ",";
+                                specialitiesIdString += "5:" + array[1] + ":" + i.Id + ",";
+                            }
+                            var inlineKeyboard = new InlineKeyboardMarkup(GetInlineKeyboard(specialitiesNameString.Remove(specialitiesNameString.Length - 1).Split(","), specialitiesIdString.Remove(specialitiesIdString.Length - 1).Split(",")));
+                            await botClient.EditMessageTextAsync(
+                                chatId: update.CallbackQuery.Message.Chat.Id,
+                                messageId: Int32.Parse(array[1]),
+                                text: "Выбери специальность",
+                                replyMarkup: inlineKeyboard);
+                        }
+                        else if (array[0] == "5") { 
                             Console.WriteLine(21);
                             var timeTables = await TimeTablesDB.GetTimeTables(array[2]);
                             var timeTablesNameString = "";
                             var timeTablesIdString = "";
                             foreach (TimeTables i in timeTables)
                             {
-                                Console.WriteLine(i.Group);
                                 timeTablesNameString += i.Group + ",";
-                                timeTablesIdString += "4:" + array[1] + ":" + i.Id + ",";
+                                timeTablesIdString += "6:" + array[1] + ":" + i.Id + ",";
                             }
                             var inlineKeyboard = new InlineKeyboardMarkup(GetInlineKeyboard(timeTablesNameString.Remove(timeTablesNameString.Length - 1).Split(","), timeTablesIdString.Remove(timeTablesIdString.Length - 1).Split(",")));
                             await botClient.EditMessageTextAsync(
@@ -139,7 +173,7 @@ namespace TelegramOnlyBot
                                 text: "Выбери группу",
                                 replyMarkup: inlineKeyboard);
                         }
-                        else if (array[0] == "4")
+                        else if (array[0] == "6")
                         {
                             await TimeTablesDB.RemoveStudent(update.CallbackQuery.Message.Chat.Id);
                             await TimeTablesDB.UpdateStudents(array[2], update.CallbackQuery.Message.Chat.Id);
@@ -152,14 +186,11 @@ namespace TelegramOnlyBot
                     return;
                 }
                 if (update.Message.Type != MessageType.Text)
-                {
-
                     return;
-                }
                 var chatId = update.Message.Chat.Id;
 
 
-                Console.WriteLine($"Received a '{update.Message.Text}' message in chat {chatId} {update.Message.Chat.FirstName}.");
+                Console.WriteLine($"Received a '{update.Message.Text}' message in chat {chatId} {update.Message.Chat.Username}.");
 
                 Message message = update.Message;
 
@@ -172,6 +203,8 @@ namespace TelegramOnlyBot
                         DateTime dayNow = DateTime.Today;
                         var cal = new GregorianCalendar();
                         var weekNumber = cal.GetWeekOfYear(dayNow, CalendarWeekRule.FirstFullWeek, DayOfWeek.Monday);
+                        if (dayNow.DayOfWeek == 0)
+                            weekNumber++;
                         foreach (Week week in timeTables.Weeks)
                         {
                             if (week.Number == weekNumber % 2)

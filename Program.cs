@@ -54,9 +54,6 @@ namespace TelegramOnlyBot
             days.Add(5, "Пятница");
             days.Add(6, "Суббота");
 
-            Message messageKeyboard = new Message() { Chat = new Chat() { Id = 0} };
-
-            var temp = 0;
 
             var botClient = new TelegramBotClient("1837593586:AAGJCGUa3LY9U05r_h8iI-1ZUM91njSzLkI");
             using var cts = new CancellationTokenSource();
@@ -84,80 +81,72 @@ namespace TelegramOnlyBot
                 {
                     if (update.Type == UpdateType.CallbackQuery)
                     {
-                        if (messageKeyboard.Chat.Id == update.CallbackQuery.Message.Chat.Id)
+                        string[] array = update.CallbackQuery.Data.Split(":");
+                        Console.WriteLine(update.CallbackQuery.Data);
+                        if (array[0] == "1")
                         {
-                            if (temp == 0)
+                            Console.WriteLine(11);
+                            var cities = await CitiesDB.GetCities(array[2]);
+                            var citiesNameString = "";
+                            var citiesIdString = "";
+                            foreach (Cities i in cities)
                             {
-                                Console.WriteLine(11);
-                                var cities = await CitiesDB.GetCities(update.CallbackQuery.Data);
-                                var citiesNameString = "";
-                                var citiesIdString = "";
-                                foreach (Cities i in cities)
-                                {
-                                    Console.WriteLine(i.Name);
-                                    citiesNameString += i.Name + ",";
-                                    citiesIdString += i.Id + ",";
-                                }
-                                var inlineKeyboard = new InlineKeyboardMarkup(GetInlineKeyboard(citiesNameString.Remove(citiesNameString.Length - 1).Split(","), citiesIdString.Remove(citiesIdString.Length - 1).Split(",")));
-                                Console.WriteLine("2");
-                                temp = 1;
-                                await botClient.EditMessageTextAsync(
-                                    chatId: messageKeyboard.Chat.Id,
-                                    messageId: messageKeyboard.MessageId,
-                                    text: "Выбери город",
-                                    replyMarkup: inlineKeyboard);
+                                Console.WriteLine(i.Name);
+                                citiesNameString += i.Name + ",";
+                                citiesIdString += "2:" + array[1] + ":" + i.Id + ",";
                             }
-                            else if (temp == 1)
+                            var inlineKeyboard = new InlineKeyboardMarkup(GetInlineKeyboard(citiesNameString.Remove(citiesNameString.Length - 1).Split(","), citiesIdString.Remove(citiesIdString.Length - 1).Split(",")));
+                            await botClient.EditMessageTextAsync(
+                                chatId: update.CallbackQuery.Message.Chat.Id,
+                                messageId: Int32.Parse(array[1]),
+                                text: "Выбери город",
+                                replyMarkup: inlineKeyboard);
+                        }
+                        else if (array[0] == "2")
+                        {
+                            var universities = await UniversitiesDB.GetUniversities(array[2]);
+                            var universitiesNameString = "";
+                            var universitiesIdString = "";
+                            foreach (Universities i in universities)
                             {
-
-                                Console.WriteLine(21);
-                                var universities = await UniversitiesDB.GetUniversities(update.CallbackQuery.Data);
-                                var universitiesNameString = "";
-                                var universitiesIdString = "";
-                                foreach (Universities i in universities)
-                                {
-                                    Console.WriteLine(i.Name);
-                                    universitiesNameString += i.Name + ",";
-                                    universitiesIdString += i.Id + ",";
-                                }
-                                var inlineKeyboard = new InlineKeyboardMarkup(GetInlineKeyboard(universitiesNameString.Remove(universitiesNameString.Length - 1).Split(","), universitiesIdString.Remove(universitiesIdString.Length - 1).Split(",")));
-                                Console.WriteLine("222222222");
-                                await botClient.EditMessageTextAsync(
-                                    chatId: messageKeyboard.Chat.Id,
-                                    messageId: messageKeyboard.MessageId,
-                                    text: "Выбери университет",
-                                    replyMarkup: inlineKeyboard);
-                                temp = 2;
+                                Console.WriteLine(i.Name);
+                                universitiesNameString += i.Name + ",";
+                                universitiesIdString += "3:" + array[1] + ":" + i.Id + ",";
                             }
-                            else if (temp == 2)
+                            var inlineKeyboard = new InlineKeyboardMarkup(GetInlineKeyboard(universitiesNameString.Remove(universitiesNameString.Length - 1).Split(","), universitiesIdString.Remove(universitiesIdString.Length - 1).Split(",")));
+                            await botClient.EditMessageTextAsync(
+                                chatId: update.CallbackQuery.Message.Chat.Id,
+                                messageId: Int32.Parse(array[1]),
+                                text: "Выбери университет",
+                                replyMarkup: inlineKeyboard);
+                        }
+                        else if (array[0] == "3")
+                        {
+                            Console.WriteLine(21);
+                            var timeTables = await TimeTablesDB.GetTimeTables(array[2]);
+                            var timeTablesNameString = "";
+                            var timeTablesIdString = "";
+                            foreach (TimeTables i in timeTables)
                             {
-                                Console.WriteLine(21);
-                                var timeTables = await TimeTablesDB.GetTimeTables(update.CallbackQuery.Data);
-                                var timeTablesNameString = "";
-                                var timeTablesIdString = "";
-                                foreach (TimeTables i in timeTables)
-                                {
-                                    Console.WriteLine(i.Group);
-                                    timeTablesNameString += i.Group + ",";
-                                    timeTablesIdString += i.Id + ",";
-                                }
-                                var inlineKeyboard = new InlineKeyboardMarkup(GetInlineKeyboard(timeTablesNameString.Remove(timeTablesNameString.Length - 1).Split(","), timeTablesIdString.Remove(timeTablesIdString.Length - 1).Split(",")));
-                                Console.WriteLine("222222222");
-                                await botClient.EditMessageTextAsync(
-                                    chatId: messageKeyboard.Chat.Id,
-                                    messageId: messageKeyboard.MessageId,
-                                    text: "Выбери группу",
-                                    replyMarkup: inlineKeyboard);
-                                temp = 3;
-                            }                           
-                            else {
-                                await TimeTablesDB.UpdateStudents(update.CallbackQuery.Data, messageKeyboard.Chat.Id);
-                                await botClient.EditMessageTextAsync(
-                                    chatId: messageKeyboard.Chat.Id,
-                                    messageId: messageKeyboard.MessageId,
-                                    text: "Вы успешно добавлены в базу данных!");
-                                temp = 0;
+                                Console.WriteLine(i.Group);
+                                timeTablesNameString += i.Group + ",";
+                                timeTablesIdString += "4:" + array[1] + ":" + i.Id + ",";
                             }
+                            var inlineKeyboard = new InlineKeyboardMarkup(GetInlineKeyboard(timeTablesNameString.Remove(timeTablesNameString.Length - 1).Split(","), timeTablesIdString.Remove(timeTablesIdString.Length - 1).Split(",")));
+                            await botClient.EditMessageTextAsync(
+                                chatId: update.CallbackQuery.Message.Chat.Id,
+                                messageId: Int32.Parse(array[1]),
+                                text: "Выбери группу",
+                                replyMarkup: inlineKeyboard);
+                        }
+                        else if (array[0] == "4")
+                        {
+                            await TimeTablesDB.RemoveStudent(update.CallbackQuery.Message.Chat.Id);
+                            await TimeTablesDB.UpdateStudents(array[2], update.CallbackQuery.Message.Chat.Id);
+                            await botClient.EditMessageTextAsync(
+                                chatId: update.CallbackQuery.Message.Chat.Id,
+                                messageId: Int32.Parse(array[1]),
+                                text: "Вы успешно добавлены в базу данных!");
                         }
                     }
                     return;
@@ -336,17 +325,21 @@ namespace TelegramOnlyBot
                     var countries = await CountriesDB.GetCounties();
                     var countriesNameString = "";
                     var countriesIdString = "";
+                    Message messageKeyboard = await botClient.SendTextMessageAsync(
+                        chatId: chatId,
+                        text: "Выбери страну");
                     foreach (Countries i in countries)
                     {
                         countriesNameString += i.Name + ",";
-                        countriesIdString += i.Id + ",";
+                        countriesIdString += "1:" + messageKeyboard.MessageId + ":" + i.Id + ",";
                     }
                     var inlineKeyboard = new InlineKeyboardMarkup(GetInlineKeyboard(countriesNameString.Remove(countriesNameString.Length - 1).Split(","), countriesIdString.Remove(countriesIdString.Length - 1).Split(",")));
-                    messageKeyboard = await botClient.SendTextMessageAsync(
-                        chatId: chatId,
+                    await botClient.EditMessageTextAsync(
+                        chatId: messageKeyboard.Chat.Id,
+                        messageId: messageKeyboard.MessageId,
                         text: "Выбери страну",
                         replyMarkup: inlineKeyboard);
-                    
+
 
                 }
                 else

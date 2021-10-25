@@ -52,6 +52,10 @@ namespace TelegramOnlyBot.Models
         /// добавление студента в бд
         public async Task UpdateStudents(string id, long idStudent)
         {
+            if (GetTimeTable(idStudent).Result is not null)
+            {
+                await RemoveStudent(idStudent);
+            }
             var filter = Builders<TimeTables>
              .Filter.Eq(e => e.Id, id);
 
@@ -69,6 +73,7 @@ namespace TelegramOnlyBot.Models
         /// удаление документа
         public async Task Remove(string id)
         {
+
             await TimeTables.DeleteOneAsync(new BsonDocument("_id", new ObjectId(id)));
         }
         /// удаление студента

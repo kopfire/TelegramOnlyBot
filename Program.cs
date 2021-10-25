@@ -80,7 +80,6 @@ namespace TelegramOnlyBot
 
             async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
             {
-
                 if (update.Type != UpdateType.Message)
                 {
                     if (update.Type == UpdateType.CallbackQuery)
@@ -173,7 +172,6 @@ namespace TelegramOnlyBot
                         }
                         else if (array[0] == "6")
                         {
-                            await TimeTablesDB.RemoveStudent(update.CallbackQuery.Message.Chat.Id);
                             await TimeTablesDB.UpdateStudents(array[2], update.CallbackQuery.Message.Chat.Id);
                             await botClient.EditMessageTextAsync(
                                 chatId: update.CallbackQuery.Message.Chat.Id,
@@ -351,7 +349,7 @@ namespace TelegramOnlyBot
                             text: "Вашего расписания нет в базе данных");
                     }
                 }
-                else if (message.Text == "/setgroup")
+                else if (message.Text == "/setgroup" || message.Text == "/start")
                 {
                     var countries = await CountriesDB.GetCounties();
                     var countriesNameString = "";

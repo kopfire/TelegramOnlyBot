@@ -59,7 +59,7 @@ namespace TelegramOnlyBot
             days.Add(6, "Суббота");
 
 
-            var botClient = new TelegramBotClient("1837593586:AAGJCGUa3LY9U05r_h8iI-1ZUM91njSzLkI");
+            var botClient = new TelegramBotClient("1837593586:AAElIgx9Anhpm3tz58zjGNlwO0zcsBxTNdY");
             using var cts = new CancellationTokenSource();
             botClient.StartReceiving(new DefaultUpdateHandler(updateHandler: HandleUpdateAsync, errorHandler: HandleErrorAsync),
     cts.Token);

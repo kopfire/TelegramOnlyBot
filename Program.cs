@@ -219,7 +219,7 @@ namespace TelegramOnlyBot
                                     foreach (Lesson lesson in day.Lessons)
                                     {
                                         lol++;
-                                        responseMessage += "*" + lesson.Number + " пара*\n";
+                                        responseMessage += "*" + lesson.Number + " пара(" + lesson.Time + ")*\n";
                                         responseMessage += lesson.Name + " - ";
                                         responseMessage += lesson.Teacher + "\nАудитория - ";
                                         responseMessage += lesson.Audience + "\n\n";
@@ -264,8 +264,7 @@ namespace TelegramOnlyBot
                                         string responseMessage = "*Расписание на сегодня:\n\n*";
                                         foreach (Lesson lesson in day.Lessons)
                                         {
-
-                                            responseMessage += "*" + lesson.Number + " пара*\n";
+                                            responseMessage += "*" + lesson.Number + " пара(" + lesson.Time + ")*\n";
                                             responseMessage += lesson.Name + " - ";
                                             responseMessage += lesson.Teacher + "\nАудитория - ";
                                             responseMessage += lesson.Audience + "\n\n";
@@ -319,7 +318,7 @@ namespace TelegramOnlyBot
                                         foreach (Lesson lesson in day.Lessons)
                                         {
 
-                                            responseMessage += "*" + lesson.Number + " пара*\n";
+                                            responseMessage += "*" + lesson.Number + " пара(" + lesson.Time + ")*\n";
                                             responseMessage += lesson.Name + " - ";
                                             responseMessage += lesson.Teacher + "\nАудитория - ";
                                             responseMessage += lesson.Audience + "\n\n";

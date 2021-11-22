@@ -9,14 +9,13 @@ namespace TelegramOnlyBot.Models
 {
     public class FacultiesService
     {
-        IMongoCollection<Faculties> Faculties; /// коллекция в базе данных
+        readonly IMongoCollection<Faculties> Faculties; /// коллекция в базе данных
         public FacultiesService()
         {
             /// строка подключения
             string connectionString = "mongodb://localhost:27017";
-            var connection = new MongoUrlBuilder(connectionString);
             /// получаем клиента для взаимодействия с базой данных
-            MongoClient client = new MongoClient(connectionString);
+            MongoClient client = new(connectionString);
             /// получаем доступ к самой базе данных
             IMongoDatabase database = client.GetDatabase("Telegram");
             /// обращаемся к коллекции TimeTable
@@ -30,9 +29,10 @@ namespace TelegramOnlyBot.Models
         }
 
         /// добавление документа
-        public async Task Create(Faculties p)
+        public async Task<string> Create(Faculties p)
         {
             await Faculties.InsertOneAsync(p);
+            return p.Id;
         }
         /// обновление документа
         public async Task Update(Faculties p)

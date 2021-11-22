@@ -1,7 +1,9 @@
-﻿namespace TelegramOnlyBot.Helpers.JSON
+﻿using System.Collections.Generic;
+
+namespace TelegramOnlyBot.Helpers.JSON
 {
     public class TimeTable
     {
-        public Week[] Weeks { get; set; }
+        public List<Week> Weeks { get; set; }
     }
 }

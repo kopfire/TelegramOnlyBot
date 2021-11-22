@@ -18,7 +18,7 @@ namespace TelegramOnlyBot.Models
         public string Group { get; set; }
 
         [Display(Name = "Недели")]
-        public Week[] Weeks { get; set; }
+        public List<Week> Weeks { get; set; }
 
         [Display(Name = "Студенты")]
         public List<long> Students { get; set; }

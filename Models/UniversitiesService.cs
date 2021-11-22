@@ -9,14 +9,13 @@ namespace TelegramOnlyBot.Models
 {
     public class UniversitiesService
     {
-        IMongoCollection<Universities> Universities; /// коллекция в базе данных
+        readonly IMongoCollection<Universities> Universities; /// коллекция в базе данных
         public UniversitiesService()
         {
             /// строка подключения
             string connectionString = "mongodb://localhost:27017";
-            var connection = new MongoUrlBuilder(connectionString);
             /// получаем клиента для взаимодействия с базой данных
-            MongoClient client = new MongoClient(connectionString);
+            MongoClient client = new(connectionString);
             /// получаем доступ к самой базе данных
             IMongoDatabase database = client.GetDatabase("Telegram");
             /// обращаемся к коллекции TimeTable

@@ -11,6 +11,11 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using TelegramOnlyBot.Models;
+using Hangfire.Mongo;
+using Hangfire.Mongo.Migration.Strategies;
+using Hangfire.Mongo.Migration.Strategies.Backup;
+using MongoDB.Driver;
+using Hangfire;
 
 namespace TelegramOnlyBot
 {
@@ -30,6 +35,25 @@ namespace TelegramOnlyBot
 
         static void Main(string[] args)
         {
+            var options = new MongoStorageOptions
+            {
+                MigrationOptions = new MongoMigrationOptions
+                {
+                    MigrationStrategy = new DropMongoMigrationStrategy(),
+                    BackupStrategy = new NoneMongoBackupStrategy()
+                }
+            };
+
+            var mongoStorage = new MongoStorage(
+                            MongoClientSettings.FromConnectionString("mongodb://localhost:27017"),
+                            "Telegram", // database name
+                            options);
+            using (new BackgroundJobServer(mongoStorage))
+            {
+
+                RecurringJob.AddOrUpdate("easyjob", () => Console.Write("Easy!"), Cron.Minutely);
+            }
+
             Dictionary<int, string> days = new(6);
             days.Add(1, "Понедельник");
             days.Add(2, "Вторник");

@@ -12,10 +12,10 @@ using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using TelegramOnlyBot.Models;
 using Hangfire.Mongo;
-using Hangfire.Mongo.Migration.Strategies;
-using Hangfire.Mongo.Migration.Strategies.Backup;
 using MongoDB.Driver;
 using Hangfire;
+using Hangfire.Mongo.Migration.Strategies;
+using Hangfire.Mongo.Migration.Strategies.Backup;
 
 namespace TelegramOnlyBot
 {
@@ -35,7 +35,7 @@ namespace TelegramOnlyBot
 
         static void Main(string[] args)
         {
-            var options = new MongoStorageOptions
+            /*var options = new MongoStorageOptions
             {
                 MigrationOptions = new MongoMigrationOptions
                 {
@@ -43,16 +43,44 @@ namespace TelegramOnlyBot
                     BackupStrategy = new NoneMongoBackupStrategy()
                 }
             };
-
+            GlobalConfiguration.Configuration.UseMongoStorage("mongodb://localhost:27017/Telegram", options);
             var mongoStorage = new MongoStorage(
                             MongoClientSettings.FromConnectionString("mongodb://localhost:27017"),
                             "Telegram", // database name
                             options);
-            using (new BackgroundJobServer(mongoStorage))
+            using (var server = new BackgroundJobServer(mongoStorage))
             {
-
+                Console.WriteLine("Hangfire Server started. Press any key to exit...");
+                Console.ReadKey();
                 RecurringJob.AddOrUpdate("easyjob", () => Console.Write("Easy!"), Cron.Minutely);
             }
+
+            GlobalConfiguration.Configuration.UseMongoStorage("mongodb://localhost:27017/Telegram", options);
+
+            using (var server = new BackgroundJobServer())
+            {
+                server.Dispose();
+                Console.WriteLine("Hangfire Server started. Press any key to exit...");
+                Console.ReadKey();
+               
+            }
+            Console.WriteLine(1);
+            var mongoStorage = new MongoStorage(
+                            MongoClientSettings.FromConnectionString("mongodb://localhost:27017"),
+                            "Telegram", // database name
+                            options);
+            Console.WriteLine(2);
+
+            using (var server = new BackgroundJobServer(mongoStorage))
+            {
+                Console.WriteLine("Hangfire Server started. Press any key to exit...");
+                Console.ReadKey();
+                RecurringJob.AddOrUpdate("easyjob", () => Console.Write("LOL!"), Cron.Minutely);
+
+            }
+            Console.WriteLine(5);
+            RecurringJob.AddOrUpdate("easyjob", () => Console.Write("LOL!"), Cron.Minutely);*/
+
 
             Dictionary<int, string> days = new(6);
             days.Add(1, "Понедельник");
@@ -63,8 +91,18 @@ namespace TelegramOnlyBot
             days.Add(6, "Суббота");
 
             var botClient = new TelegramBotClient("1837593586:AAElIgx9Anhpm3tz58zjGNlwO0zcsBxTNdY");
+
             using var cts = new CancellationTokenSource();
-            botClient.StartReceiving(new DefaultUpdateHandler(updateHandler: HandleUpdateAsync, errorHandler: HandleErrorAsync), cts.Token);
+
+            var receiverOptions = new ReceiverOptions
+            {
+                AllowedUpdates = { }
+            };
+            botClient.StartReceiving(
+                HandleUpdateAsync,
+                HandleErrorAsync,
+                receiverOptions,
+                cancellationToken: cts.Token);
 
             Console.ReadLine();
 
